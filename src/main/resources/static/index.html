@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerçek Zamanlı Veri İzleme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active {
+            background: #10b981;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .plot-container {
+            padding: 30px;
+            background: white;
+        }
+
+        .plot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .plot-title {
+            font-size: 1.5em;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .plot-wrapper {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            position: relative;
+        }
+
+        #plotImage {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            position: absolute;
+            display: none;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📊 Gerçek Zamanlı Veri İzleme</h1>
+        <p>CSV Verilerinden Dinamik Grafik Görselleştirme</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Durum</div>
+                <div class="stat-value">
+                    <span class="status-indicator active"></span>
+                    <span id="statusText">Aktif</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Güncelleme</div>
+                <div class="stat-value" id="updateCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Son Güncelleme</div>
+                <div class="stat-value" id="lastUpdate" style="font-size: 1.2em;">--:--:--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Yenileme Aralığı</div>
+                <div class="stat-value" id="refreshRate">1s</div>
+            </div>
+        </div>
+
+        <div class="plot-container">
+            <div class="plot-header">
+                <div class="plot-title">
+                    📈 Canlı Grafik
+                </div>
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="toggleAutoRefresh()">
+                        <span id="toggleText">⏸ Durdur</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="manualRefresh()">🔄 Yenile</button>
+                </div>
+            </div>
+
+            <div class="plot-wrapper">
+                <div class="loading" id="loading">Yükleniyor...</div>
+                <img id="plotImage" src="/plot" alt="Dinamik Grafik">
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Spring Boot + R + GraalVM | SWE307 Project</p>
+    </div>
+</div>
+
+<script>
+    let autoRefresh = true;
+    let updateCounter = 0;
+    let refreshInterval;
+
+    function updatePlot() {
+        const img = document.getElementById('plotImage');
+        const timestamp = new Date().getTime();
+
+        // Cache'i bypass etmek için timestamp ekle
+        img.src = `/plot?t=${timestamp}`;
+
+        // İstatistikleri güncelle
+        updateCounter++;
+        document.getElementById('updateCount').textContent = updateCounter;
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('tr-TR');
+        document.getElementById('lastUpdate').textContent = timeStr;
+    }
+
+    function toggleAutoRefresh() {
+        autoRefresh = !autoRefresh;
+        const btn = document.getElementById('toggleText');
+        const statusText = document.getElementById('statusText');
+
+        if (autoRefresh) {
+            btn.textContent = '⏸ Durdur';
+            statusText.textContent = 'Aktif';
+            startAutoRefresh();
+        } else {
+            btn.textContent = '▶ Başlat';
+            statusText.textContent = 'Duraklatıldı';
+            stopAutoRefresh();
+        }
+    }
+
+    function manualRefresh() {
+        updatePlot();
+    }
+
+    function startAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(updatePlot, 1000);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
+    // Sayfa yüklendiğinde başlat
+    window.addEventListener('load', () => {
+        updatePlot();
+        startAutoRefresh();
+    });
+
+    // Görsel yüklenme durumunu göster
+    document.getElementById('plotImage').addEventListener('loadstart', () => {
+        document.getElementById('loading').style.display = 'block';
+    });
+
+    document.getElementById('plotImage').addEventListener('load', () => {
+        document.getElementById('loading').style.display = 'none';
+    });
+</script>
+</body>
+</html>

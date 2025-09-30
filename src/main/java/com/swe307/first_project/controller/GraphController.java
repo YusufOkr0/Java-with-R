@@ -3,6 +3,7 @@ package com.swe307.first_project.controller;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,13 +12,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@RestController
-@RequestMapping("/plot")
+@Controller
+@RequestMapping
 public class GraphController {
 
     private final static String FILE_PATH = "src/main/resources/static/plot.svg";
 
-    @GetMapping
+    @GetMapping("/plot")
     public ResponseEntity<byte[]> getPlot() {
         try {
             Path path = Path.of(FILE_PATH);
@@ -34,5 +35,10 @@ public class GraphController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "index.html";  // src/main/resources/static/index.html
     }
 }
