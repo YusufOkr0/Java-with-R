@@ -14,11 +14,14 @@ update_plot_svg <- function(value, file_path="src/main/resources/static/plot.svg
   print(xyplot(
     y_values ~ x_values,
     type = "l",
-    col.line = "darkbrown",
-    grid = TRUE,
+    col.line = "brown",
     xlab = "Index",
     ylab = "Value",
-    main = "Dynamic Plot from Java Data"
+    main = "Dynamic Plot from Java Data",
+    panel = function(...) {
+      panel.grid(h = -1, v = -1, col = "lightgray")  # grid ekli
+      panel.xyplot(...)
+    }
   ))
 
   dev.off()
