@@ -8,54 +8,57 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
- * Csv dosyasindan tüm veri java tarafina alinsin. sonra bir scheculed job baslatilsin.
- * her saniye bir bölme okunur R tarafina atilir.
- */
+
 @Service
-public class CSVLoaderService {
+public class PlotGeneratorService {
 
-    private static String CSV_FILE = "swe307_pro1.csv";
-    private List<Double> cvsDataColumn;
-    private int csvIndex;
+    private static final String CSV_FILE = "swe307_pro1.csv";
+    private final RCallerService rCallerService;
 
+    private List<Double> allCsvData;
+    private int csvIndex = 0;
+
+    public PlotGeneratorService(RCallerService rCallerService) {
+        this.rCallerService = rCallerService;
+    }
 
     @PostConstruct
     public void init() {
         loadCsvData();
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(this::readTheDataAndPushToR, 3, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(
+                this::readTheDataAndPushToR,
+                3,
+                1,
+                TimeUnit.SECONDS);
     }
 
-    public void loadCsvData(){
+    private void loadCsvData() {
         ClassPathResource resource = new ClassPathResource(CSV_FILE);
 
         try (InputStream dataStream = resource.getInputStream();
-             BufferedReader dataReader = new BufferedReader(new InputStreamReader(dataStream)))
-        {
-            cvsDataColumn = dataReader.lines()
+             BufferedReader dataReader = new BufferedReader(new InputStreamReader(dataStream))) {
+            allCsvData = dataReader.lines()
                     .map(line -> line.split(",")[0])
                     .map(Double::parseDouble)
                     .collect(Collectors.toList());
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void readTheDataAndPushToR() {
-        if (csvIndex < cvsDataColumn.size()) {
-            double nextValue = cvsDataColumn.get(csvIndex);
+        if (csvIndex < allCsvData.size()) {
+            double nextValue = allCsvData.get(csvIndex);
             csvIndex++;
-
-            String newSvg = rPlottingService.updateAndGetPlotSvg(nextValue);
-
+            rCallerService.updateAndGetPlotSvg(nextValue);
         }
     }
 
