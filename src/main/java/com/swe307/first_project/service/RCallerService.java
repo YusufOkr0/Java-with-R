@@ -15,29 +15,8 @@ import java.io.InputStreamReader;
 public class RCallerService {
 
     private static final String FORMULA_FILE = "script/plot.R";
-
     private Context context;
 
-    @PostConstruct
-    private void loadTheSourceCode() {
-        ClassPathResource R_SOURCE_CODE = new ClassPathResource(FORMULA_FILE);
-
-        try (InputStream scriptFile = R_SOURCE_CODE.getInputStream();
-             InputStreamReader reader = new InputStreamReader(scriptFile)) {
-            Source source = Source.newBuilder(
-                    "R",
-                    reader,
-                    "R"
-            ).build();
-
-            context = Context.newBuilder("R")
-                    .allowAllAccess(true)
-                    .build();
-            context.eval(source);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void updateAndGetPlotSvg(double value) {
         try {
@@ -51,8 +30,25 @@ public class RCallerService {
         }
     }
 
+    @PostConstruct
+    private void loadTheSourceCode() {
+        ClassPathResource rSourceCode = new ClassPathResource(FORMULA_FILE);
 
+        try (InputStream scriptFile = rSourceCode.getInputStream();
+             InputStreamReader reader = new InputStreamReader(scriptFile)) {
 
-
+            Source source = Source.newBuilder(
+                    "R",
+                    reader,
+                    "R"
+            ).build();
+            context = Context.newBuilder("R")
+                    .allowAllAccess(true)
+                    .build();
+            context.eval(source);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

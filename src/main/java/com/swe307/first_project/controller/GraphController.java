@@ -25,6 +25,7 @@ public class GraphController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.valueOf("image/svg+xml"));
+            headers.set("Refresh", "1");
 
             return ResponseEntity.ok()
                     .headers(headers)
