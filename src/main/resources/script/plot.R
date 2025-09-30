@@ -9,7 +9,7 @@ update_plot_svg <- function(value, file_path="src/main/resources/static/plot.svg
   y_values[current_index] <<- value
   current_index <<- current_index + 1
 
-  svg(filename = file_path, width = 6, height = 4)
+  svg(filename = file_path, width = 9, height = 6)
 
   print(xyplot(
     y_values ~ x_values,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerçek Zamanlı Veri İzleme</title>
+    <title>R × Java Analytics Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -12,160 +12,295 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            color: white;
             margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%);
+            border-radius: 15px;
+            border: 2px solid #30363d;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #276DC2 0%, #D04A37 50%, #E67E22 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-badge.r {
+            background: rgba(39, 109, 194, 0.1);
+            border-color: #276DC2;
+            color: #5B9BD5;
+        }
+
+        .tech-badge.java {
+            background: rgba(208, 74, 55, 0.1);
+            border-color: #D04A37;
+            color: #E07856;
+        }
+
+        .tech-badge.spring {
+            background: rgba(108, 194, 74, 0.1);
+            border-color: #6CB44A;
+            color: #7BC950;
+        }
+
+        .tech-badge.graalvm {
+            background: rgba(230, 126, 34, 0.1);
+            border-color: #E67E22;
+            color: #F39C12;
         }
 
         .header p {
             font-size: 1.1em;
-            opacity: 0.9;
+            color: #8b949e;
+            margin-top: 10px;
         }
 
         .dashboard {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: #161b22;
+            border-radius: 15px;
+            border: 2px solid #30363d;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
         .stats-bar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             padding: 30px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #0d1117;
+            border-bottom: 2px solid #30363d;
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%);
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid #30363d;
             text-align: center;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            border-color: #58a6ff;
+            box-shadow: 0 8px 24px rgba(88, 166, 255, 0.2);
         }
 
         .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 8px;
+            color: #8b949e;
+            font-size: 0.85em;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
         }
 
         .stat-value {
-            color: #667eea;
-            font-size: 2em;
+            color: #58a6ff;
+            font-size: 2.2em;
             font-weight: bold;
+            font-family: 'Courier New', monospace;
         }
 
         .status-indicator {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
+            margin-right: 10px;
+            position: relative;
         }
 
         .status-indicator.active {
-            background: #10b981;
+            background: #3fb950;
+            box-shadow: 0 0 10px #3fb950;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid #3fb950;
+            border-radius: 50%;
+            animation: ripple 2s infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .plot-container {
             padding: 30px;
-            background: white;
+            background: #161b22;
         }
 
         .plot-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #0d1117;
+            border-radius: 10px;
+            border: 2px solid #30363d;
         }
 
         .plot-title {
-            font-size: 1.5em;
-            color: #333;
+            font-size: 1.6em;
+            color: #58a6ff;
             display: flex;
             align-items: center;
+            gap: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .code-icon {
+            font-family: 'Courier New', monospace;
+            color: #7ee787;
+            font-size: 1.2em;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
+            padding: 12px 24px;
+            border: 2px solid;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9em;
-            font-weight: 600;
+            font-weight: bold;
             transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #276DC2, #1f5a9e);
             color: white;
+            border-color: #276DC2;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: linear-gradient(135deg, #1f5a9e, #276DC2);
+            box-shadow: 0 4px 20px rgba(39, 109, 194, 0.4);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .btn-secondary {
-            background: #e5e7eb;
-            color: #333;
+            background: #21262d;
+            color: #c9d1d9;
+            border-color: #30363d;
         }
 
         .btn-secondary:hover {
-            background: #d1d5db;
+            background: #30363d;
+            border-color: #58a6ff;
+            box-shadow: 0 4px 20px rgba(88, 166, 255, 0.2);
         }
 
         .plot-wrapper {
-            background: #f9fafb;
+            background: #0d1117;
             border-radius: 12px;
-            padding: 20px;
+            border: 2px solid #30363d;
+            padding: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 500px;
+            min-height: 550px;
             position: relative;
         }
 
@@ -173,30 +308,65 @@
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 2px solid #30363d;
         }
 
         .loading {
             position: absolute;
             display: none;
-            color: #667eea;
-            font-size: 1.2em;
+            color: #58a6ff;
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
 
         .footer {
             text-align: center;
-            color: white;
             margin-top: 30px;
-            opacity: 0.8;
+            padding: 20px;
+            color: #8b949e;
+            background: #0d1117;
+            border-radius: 10px;
+            border: 2px solid #30363d;
+        }
+
+        .footer code {
+            background: #21262d;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #7ee787;
+            font-weight: bold;
         }
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 1.8em;
+                font-size: 2em;
             }
 
             .stats-bar {
                 grid-template-columns: 1fr;
+            }
+
+            .plot-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .controls {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -204,55 +374,68 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>📊 Gerçek Zamanlı Veri İzleme</h1>
-        <p>CSV Verilerinden Dinamik Grafik Görselleştirme</p>
+        <h1>⚡ R × JAVA ANALYTICS DASHBOARD</h1>
+        <div class="tech-stack">
+            <span class="tech-badge r">📊 R Language</span>
+            <span class="tech-badge java">☕ Java</span>
+            <span class="tech-badge spring">🍃 Spring Boot</span>
+            <span class="tech-badge graalvm">⚙️ GraalVM</span>
+        </div>
+        <p>Real-time CSV Data Visualization with Polyglot Integration</p>
     </div>
 
     <div class="dashboard">
         <div class="stats-bar">
             <div class="stat-card">
-                <div class="stat-label">Durum</div>
+                <div class="stat-label">⚡ System Status</div>
                 <div class="stat-value">
                     <span class="status-indicator active"></span>
-                    <span id="statusText">Aktif</span>
+                    <span id="statusText">ONLINE</span>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Güncelleme</div>
+                <div class="stat-label">🔄 Updates</div>
                 <div class="stat-value" id="updateCount">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Son Güncelleme</div>
-                <div class="stat-value" id="lastUpdate" style="font-size: 1.2em;">--:--:--</div>
+                <div class="stat-label">🕐 Last Sync</div>
+                <div class="stat-value" id="lastUpdate" style="font-size: 1.3em;">--:--:--</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Yenileme Aralığı</div>
-                <div class="stat-value" id="refreshRate">1s</div>
+                <div class="stat-label">⏱️ Interval</div>
+                <div class="stat-value" id="refreshRate">1000ms</div>
             </div>
         </div>
 
         <div class="plot-container">
             <div class="plot-header">
                 <div class="plot-title">
-                    📈 Canlı Grafik
+                    <span class="code-icon">{'</span>
+                    LIVE PLOT STREAM
+                    <span class="code-icon">'}</span>
                 </div>
                 <div class="controls">
                     <button class="btn btn-secondary" onclick="toggleAutoRefresh()">
-                        <span id="toggleText">⏸ Durdur</span>
+                        <span id="toggleText">⏸ PAUSE</span>
                     </button>
-                    <button class="btn btn-primary" onclick="manualRefresh()">🔄 Yenile</button>
+                    <button class="btn btn-primary" onclick="manualRefresh()">🔄 REFRESH</button>
                 </div>
             </div>
 
             <div class="plot-wrapper">
-                <div class="loading" id="loading">Yükleniyor...</div>
-                <img id="plotImage" src="/plot" alt="Dinamik Grafik">
+                <div class="loading" id="loading">LOADING</div>
+                <img id="plotImage" src="/plot" alt="Dynamic R Plot">
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Spring Boot + R + GraalVM | SWE307 Project</p>
+        <p>
+            <code>lattice::xyplot()</code> ⟷
+            <code>GraalVM Polyglot</code> ⟷
+            <code>Spring @RestController</code>
+        </p>
+        <p style="margin-top: 10px; font-size: 0.9em;">SWE307 Project | Real-time Data Pipeline</p>
     </div>
 </div>
 
@@ -265,10 +448,8 @@
         const img = document.getElementById('plotImage');
         const timestamp = new Date().getTime();
 
-        // Cache'i bypass etmek için timestamp ekle
         img.src = `/plot?t=${timestamp}`;
 
-        // İstatistikleri güncelle
         updateCounter++;
         document.getElementById('updateCount').textContent = updateCounter;
 
@@ -281,14 +462,17 @@
         autoRefresh = !autoRefresh;
         const btn = document.getElementById('toggleText');
         const statusText = document.getElementById('statusText');
+        const indicator = document.querySelector('.status-indicator');
 
         if (autoRefresh) {
-            btn.textContent = '⏸ Durdur';
-            statusText.textContent = 'Aktif';
+            btn.textContent = '⏸ PAUSE';
+            statusText.textContent = 'ONLINE';
+            indicator.classList.add('active');
             startAutoRefresh();
         } else {
-            btn.textContent = '▶ Başlat';
-            statusText.textContent = 'Duraklatıldı';
+            btn.textContent = '▶ START';
+            statusText.textContent = 'PAUSED';
+            indicator.classList.remove('active');
             stopAutoRefresh();
         }
     }
@@ -309,13 +493,11 @@
         }
     }
 
-    // Sayfa yüklendiğinde başlat
     window.addEventListener('load', () => {
         updatePlot();
         startAutoRefresh();
     });
 
-    // Görsel yüklenme durumunu göster
     document.getElementById('plotImage').addEventListener('loadstart', () => {
         document.getElementById('loading').style.display = 'block';
     });
