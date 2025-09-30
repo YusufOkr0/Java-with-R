@@ -30,6 +30,9 @@ public class RCallerService {
                     "R"
             ).build();
 
+            context = Context.newBuilder("R")
+                    .allowAllAccess(true)
+                    .build();
             context.eval(source);
         } catch (IOException e) {
             throw new RuntimeException(e);
