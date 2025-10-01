@@ -445,6 +445,14 @@
     let refreshInterval;
 
     function updatePlot() {
+        if (updateCounter >= 99) {
+            stopAutoRefresh();
+            document.getElementById('statusText').textContent = 'COMPLETED';
+            document.querySelector('.status-indicator').classList.remove('active');
+            document.getElementById('toggleText').textContent = '✔ DONE';
+            return;
+        }
+
         const img = document.getElementById('plotImage');
         const timestamp = new Date().getTime();
 
@@ -457,6 +465,7 @@
         const timeStr = now.toLocaleTimeString('tr-TR');
         document.getElementById('lastUpdate').textContent = timeStr;
     }
+
 
     function toggleAutoRefresh() {
         autoRefresh = !autoRefresh;
