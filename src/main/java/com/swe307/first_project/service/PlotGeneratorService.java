@@ -40,7 +40,11 @@ public class PlotGeneratorService {
     }
 
     public void readTheDataAndPushToR() {
-        if (executionCounter >= MAX_EXECUTIONS) return;
+        if (executionCounter >= MAX_EXECUTIONS){
+            executionCounter = 0;
+            csvIndex = 0;
+            return;
+        }
 
         if (allCsvData != null && csvIndex < allCsvData.size()) {
             System.out.println("allCsvData = " + allCsvData.size());

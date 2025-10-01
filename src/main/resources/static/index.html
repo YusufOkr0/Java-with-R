@@ -445,11 +445,12 @@
     let refreshInterval;
 
     function updatePlot() {
-        if (updateCounter >= 100) {
+        if (updateCounter >= 98) {
             stopAutoRefresh();
             document.getElementById('statusText').textContent = 'COMPLETED';
             document.querySelector('.status-indicator').classList.remove('active');
             document.getElementById('toggleText').textContent = '✔ DONE';
+            updateCounter = 0;
             return;
         }
 
