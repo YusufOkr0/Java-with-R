@@ -18,11 +18,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class PlotGeneratorService {
 
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private final RCallerService rCallerService;
+    private static final int MAX_EXECUTIONS = 100;
 
+    private final RCallerService rCallerService;
     private int executionCounter = 0;
-    private final int MAX_EXECUTIONS = 100;
 
 
     private List<Double> allCsvData;
@@ -35,19 +34,23 @@ public class PlotGeneratorService {
 
     @PostConstruct
     public void init() {
+        System.out.println("Loading CSV Data...");
         allCsvData = CSVLoader.loadCsvData();
+        System.out.println("CSV Data loaded. allCsvData: " + allCsvData.size());
     }
 
-    @Scheduled(fixedRate = 1000, initialDelay = 3000)
+    @Scheduled(fixedDelay = 1000L, initialDelay = 3000L)
     private void readTheDataAndPushToR() {
         if (executionCounter >= MAX_EXECUTIONS) return;
 
         if (allCsvData != null && csvIndex < allCsvData.size()) {
+            System.out.println("allCsvData = " + allCsvData.size());
+            System.out.println("csvIndex = " + csvIndex);
+            System.out.println("executionCounter = " + executionCounter);
             double nextValue = allCsvData.get(csvIndex);
             csvIndex++;
             rCallerService.updateAndGetPlotSvg(nextValue);
         }
-
         executionCounter++;
     }
 

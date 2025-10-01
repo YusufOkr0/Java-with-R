@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CSVLoader {
@@ -21,10 +20,13 @@ public class CSVLoader {
         try (InputStream dataStream = resource.getInputStream();
              BufferedReader dataReader = new BufferedReader(new InputStreamReader(dataStream))) {
 
-            return dataReader.lines()
+            List<Double> data = dataReader.lines()
                     .map(line -> line.split(",")[0])
                     .map(Double::parseDouble)
-                    .collect(Collectors.toList());
+                    .toList();
+
+            System.err.println("CSV DATA SIZE = " + data.size());
+            return data;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
