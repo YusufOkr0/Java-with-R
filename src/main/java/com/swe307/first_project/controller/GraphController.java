@@ -1,5 +1,6 @@
 package com.swe307.first_project.controller;
 
+import com.swe307.first_project.service.PlotGeneratorService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,18 @@ public class GraphController {
 
     private final static String FILE_PATH = "src/main/resources/static/plot.svg";
 
+    private final PlotGeneratorService plotGeneratorService;
+
+    public GraphController(PlotGeneratorService plotGeneratorService) {
+        this.plotGeneratorService = plotGeneratorService;
+    }
+
     @GetMapping("/plot")
     public ResponseEntity<byte[]> getPlot() {
         try {
+            synchronized (plotGeneratorService){
+                plotGeneratorService.readTheDataAndPushToR();
+            }
             Path path = Path.of(FILE_PATH);
             byte[] svgBytes = Files.readAllBytes(path);
 
@@ -38,6 +48,6 @@ public class GraphController {
 
     @GetMapping("/")
     public String index() {
-        return "index.html";  // src/main/resources/static/index.html
+        return "index.html";
     }
 }

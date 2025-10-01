@@ -39,8 +39,7 @@ public class PlotGeneratorService {
         System.out.println("CSV Data loaded. allCsvData: " + allCsvData.size());
     }
 
-    @Scheduled(fixedDelay = 1000L, initialDelay = 3000L)
-    private void readTheDataAndPushToR() {
+    public void readTheDataAndPushToR() {
         if (executionCounter >= MAX_EXECUTIONS) return;
 
         if (allCsvData != null && csvIndex < allCsvData.size()) {
