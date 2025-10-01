@@ -1,3 +1,6 @@
+y_values <- rep(NA, 100)
+current_index <- 1
+
 update_plot_svg <- function(value, file_path="src/main/resources/static/plot.svg") {
   y_values[current_index] <<- value
   current_index <<- current_index + 1
